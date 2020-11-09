@@ -1,0 +1,11 @@
+name: NGWord
+version: ${project.version}
+main: com.github.kei7777.ngword.NGWord
+api-version: 1.15
+prefix: Hisyacraft
+authors: [Kei]
+softdepend: [HolographicDisplays]
+description: Hisyacraft
+website: https://github.com/Kei-7777
+commands:
+  ngword:
