@@ -33,7 +33,7 @@ public class NGwordCommandExecutor implements CommandExecutor, TabCompleter {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     Collections.shuffle(NGWord.words);
                     NGWord.playerwords.put(p.getUniqueId(), NGWord.words.get(0));
-                    Bukkit.getPluginManager().callEvent(new NGWordUpdateEvent(p));
+                    Bukkit.getPluginManager().callEvent(new NGWordUpdateEvent(p, true));
                 }
                 sender.sendMessage("正常にランダムなNGワードを配りました。");
                 return true;
@@ -49,13 +49,11 @@ public class NGwordCommandExecutor implements CommandExecutor, TabCompleter {
                 }
                 String word = Stream.of(args).skip(2).collect(Collectors.joining(" "));
                 NGWord.playerwords.put(p.getUniqueId(), word);
-                Bukkit.getPluginManager().callEvent(new NGWordUpdateEvent(p));
+                Bukkit.getPluginManager().callEvent(new NGWordUpdateEvent(p, true));
                 sender.sendMessage("正常にセットしました。");
                 return true;
             } else if ("reset".equalsIgnoreCase(args[0])) {
-                for (Map.Entry<UUID, Hologram> entry : NGWord.holograms.entrySet()) {
-                    entry.getValue().delete();
-                }
+                NGWord.holograms.values().forEach(Hologram::delete);
                 NGWord.holograms.clear();
                 NGWord.playerwords.clear();
                 NGWord.banned.clear();

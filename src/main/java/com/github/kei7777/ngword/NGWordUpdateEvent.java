@@ -8,8 +8,15 @@ import org.bukkit.event.player.PlayerEvent;
 public class NGWordUpdateEvent extends PlayerEvent implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
 
+    public final boolean refresh;
+
     public NGWordUpdateEvent(Player who) {
+        this(who, false);
+    }
+
+    public NGWordUpdateEvent(Player who, boolean refresh) {
         super(who);
+        this.refresh = true;
     }
 
     @Override
