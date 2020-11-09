@@ -52,15 +52,21 @@ public class NGWordListener implements Listener {
             return;
         }
 
+        onApply(new NGWordUpdateEvent(p));
+    }
+
+    @EventHandler
+    public void onApply(NGWordUpdateEvent e) {
+        Player p = e.getPlayer();
         if(NGWord.playerwords.containsKey(p.getUniqueId())){
             if(!NGWord.holograms.containsKey(p.getUniqueId())){
                 Hologram holo = HologramsAPI.createHologram(plugin, p.getEyeLocation().clone().add(0,1.2,0));
-                holo.appendTextLine("ワード: " + NGWord.playerwords.get(p.getUniqueId()));
+                holo.getVisibilityManager().setVisibleByDefault(true);
                 holo.getVisibilityManager().hideTo(p);
+                holo.appendTextLine("ワード: " + NGWord.playerwords.get(p.getUniqueId()));
                 NGWord.holograms.put(p.getUniqueId(), holo);
             }
             Hologram holo = NGWord.holograms.get(p.getUniqueId());
-            holo.getVisibilityManager().hideTo(p);
             holo.teleport(p.getEyeLocation().clone().add(0,1.2,0));
         }
     }

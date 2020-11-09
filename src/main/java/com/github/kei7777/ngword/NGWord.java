@@ -1,10 +1,12 @@
 package com.github.kei7777.ngword;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 public class NGWord extends JavaPlugin {
@@ -23,14 +25,10 @@ public class NGWord extends JavaPlugin {
         banned = new ArrayList<>();
 
         String filename = "words.txt";
-        try (BufferedReader in = new BufferedReader(new FileReader(new File(this.getDataFolder() + File.separator + filename)))){
+        try (BufferedReader in = new BufferedReader(new FileReader(new File(this.getDataFolder(), filename)))) {
             String line;
-            while((line = in.readLine()) != null) words.add(line);
-        } catch (FileNotFoundException e){
-            e.printStackTrace();
-            this.setEnabled(false);
-            return;
-        } catch (IOException e){
+            while ((line = in.readLine()) != null) words.add(line);
+        } catch (IOException e) {
             e.printStackTrace();
             this.setEnabled(false);
             return;
@@ -38,12 +36,6 @@ public class NGWord extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
         getServer().getPluginCommand("ngword").setExecutor(new NGwordCommandExecutor(this));
-
-        if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) {
-            getLogger().severe("*** HolographicDisplays is not installed or not enabled. ***");
-            getLogger().severe("*** This plugin will be disabled. ***");
-            this.setEnabled(false);
-            return;
-        }
     }
+
 }
