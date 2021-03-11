@@ -3,19 +3,20 @@ version: ${project.version}
 main: com.github.kei7777.ngword.NGWord
 api-version: 1.15
 prefix: NGWord
-authors: [Kei, Kamesuta]
-depend: [HolographicDisplays]
+authors: [ Kei, Kamesuta ]
+depend: [ HolographicDisplays ]
 description: NGWord
 website: https://github.com/Kei-7777
 
 commands:
   ngword:
-    aliases: [ng]
+    aliases: [ ng ]
     permission: ngword
     description: |-
       /ngword word 単語一覧。
-      /ngword set 全員にNGワードを選択。
+      /ngword set <player> <word> 全員にNGワードを選択。
       /ngword reset 全員の選択されているNGワードをリセット
+      /ngword random
 
 permissions:
   ngword:

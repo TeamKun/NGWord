@@ -2,7 +2,6 @@ package com.github.kei7777.ngword;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,25 +10,25 @@ import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class NGwordCommandExecutor implements CommandExecutor, TabCompleter {
-    public NGwordCommandExecutor(NGWord ngWord) {
+public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
+    public NGWordCommandExecutor(NGWord ngWord) {
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length > 0)
-            if ("word".equalsIgnoreCase(args[0])) {
-                sender.sendMessage(ChatColor.GREEN + "登録単語一覧");
-                for (String s : NGWord.words) {
-                    sender.sendMessage(" - " + s);
+        if (args.length == 0) return false;
+
+        switch (args[0].toLowerCase()) {
+            case "word":
+                Message.sendSuccessMsg(sender, "登録単語一覧");
+                for (String word : NGWord.words) {
+                    sender.sendMessage(" - " + word);
                 }
                 return true;
-            } else if ("random".equalsIgnoreCase(args[0])) {
+            case "random":
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     Collections.shuffle(NGWord.words);
                     NGWord.playerwords.put(p.getUniqueId(), NGWord.words.get(0));
@@ -37,7 +36,7 @@ public class NGwordCommandExecutor implements CommandExecutor, TabCompleter {
                 }
                 sender.sendMessage("正常にランダムなNGワードを配りました。");
                 return true;
-            } else if ("set".equalsIgnoreCase(args[0])) {
+            case "set":
                 if (args.length < 3) {
                     sender.sendMessage("/ngword set <player> <word>");
                     return false;
@@ -50,18 +49,16 @@ public class NGwordCommandExecutor implements CommandExecutor, TabCompleter {
                 String word = Stream.of(args).skip(2).collect(Collectors.joining(" "));
                 NGWord.playerwords.put(p.getUniqueId(), word);
                 Bukkit.getPluginManager().callEvent(new NGWordUpdateEvent(p, true));
-                sender.sendMessage("正常にセットしました。");
+                Message.sendSuccessMsg(sender, "正常にセットしました。");
                 return true;
-            } else if ("reset".equalsIgnoreCase(args[0])) {
+            case "reset":
                 NGWord.holograms.values().forEach(Hologram::delete);
                 NGWord.holograms.clear();
                 NGWord.playerwords.clear();
-                NGWord.banned.clear();
-                sender.sendMessage("正常にリセットしました。");
+                NGWord.bannedPlayers.clear();
+                Message.sendSuccessMsg(sender, "正常にリセットしました。");
                 return true;
-            }
-
-        sender.sendMessage("/ngword <word|random|set|reset>");
+        }
         return false;
     }
 
@@ -71,12 +68,18 @@ public class NGwordCommandExecutor implements CommandExecutor, TabCompleter {
             return Stream.of("word", "random", "set", "reset")
                     .filter(e -> e.startsWith(args[0]))
                     .collect(Collectors.toList());
-        if (args.length == 2)
-            if ("set".equals(args[0]))
-                return Bukkit.getOnlinePlayers().stream()
-                        .map(Player::getName)
-                        .filter(e -> e.startsWith(args[1]))
-                        .collect(Collectors.toList());
+
+        if (args.length == 2) {
+            switch (args[0].toLowerCase()) {
+                case "set":
+                    return Bukkit.getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .filter(e -> e.startsWith(args[1]))
+                            .collect(Collectors.toList());
+                case "reset":
+                    return Collections.emptyList();
+            }
+        }
         return Collections.emptyList();
     }
 }

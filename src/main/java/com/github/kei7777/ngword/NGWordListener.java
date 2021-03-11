@@ -25,7 +25,7 @@ public class NGWordListener implements Listener {
 
     @EventHandler
     public void onJoin(AsyncPlayerPreLoginEvent e) {
-        if (NGWord.banned.contains(e.getUniqueId())) {
+        if (NGWord.bannedPlayers.contains(e.getUniqueId())) {
             e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.playerwords.get(e.getUniqueId()) + "\n\n");
         }
     }
@@ -44,7 +44,7 @@ public class NGWordListener implements Listener {
                 }.runTask(this.plugin);
                 NGWord.holograms.get(e.getPlayer().getUniqueId()).delete();
                 Bukkit.broadcastMessage(ChatColor.RED + e.getPlayer().getName() + "がNGワードを発言しました！！ (" + NGWord.playerwords.get(e.getPlayer().getUniqueId()) + ")");
-                NGWord.banned.add(e.getPlayer().getUniqueId());
+                NGWord.bannedPlayers.add(e.getPlayer().getUniqueId());
             }
         }
     }

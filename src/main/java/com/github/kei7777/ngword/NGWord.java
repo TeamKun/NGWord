@@ -15,16 +15,16 @@ public class NGWord extends JavaPlugin {
     static Map<UUID, String> playerwords;
     static List<String> words;
 
-    static List<UUID> banned;
+    static List<UUID> bannedPlayers;
 
     @Override
     public void onEnable() {
         holograms = new HashMap<>();
         playerwords = new HashMap<>();
         words = new ArrayList<>();
-        banned = new ArrayList<>();
-
+        bannedPlayers = new ArrayList<>();
         String filename = "words.txt";
+
         try (BufferedReader in = new BufferedReader(new FileReader(new File(this.getDataFolder(), filename)))) {
             String line;
             while ((line = in.readLine()) != null) words.add(line);
@@ -35,7 +35,7 @@ public class NGWord extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
-        getServer().getPluginCommand("ngword").setExecutor(new NGwordCommandExecutor(this));
+        getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
     }
 
 }
