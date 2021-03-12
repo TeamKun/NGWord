@@ -1,5 +1,6 @@
 package com.github.kei7777.ngword;
 
+import com.nametagedit.plugin.NametagEdit;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
-    List<String> subCmdList = Arrays.asList("list", "pardon", "random", "reload", "reset", "set");
+    List<String> subCmdList = Arrays.asList("add", "list", "pardon", "random", "reload", "reset", "set");
     NGWord plugin;
 
     public NGWordCommandExecutor(NGWord ngWord) {
@@ -29,6 +30,21 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
 
         String subCmd = args[0].toLowerCase();
         switch (subCmd) {
+            case "add":
+                if (args.length < 2) {
+                    sender.sendMessage(Message.FailureMsg("/ngword add <word> [word...]"));
+                    return true;
+                }
+
+                List<String> words = Arrays.stream(args).skip(1).collect(Collectors.toList());
+                NGWord.words.addAll(words);
+                try {
+                    plugin.saveList(words);
+                } catch (IOException e) {
+                    sender.sendMessage(Message.FailureMsg("書き込み中にエラーが発生しました."));
+                }
+                sender.sendMessage(Message.SuccessMsg("NGワードを追加しました."));
+                return true;
             case "list":
                 sender.sendMessage(Message.SuccessMsg("登録単語一覧"));
                 for (String word : NGWord.words) {
@@ -64,10 +80,11 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 } catch (IOException e) {
                     sender.sendMessage(Message.FailureMsg("単語リスト読み込み時にエラーが発生しました."));
                 }
-                sender.sendMessage(Message.SuccessMsg("単語リストを更新しました."));
+                sender.sendMessage(Message.SuccessMsg("単語リストファイルをロードしました."));
                 return true;
             case "reset":
                 NGWord.configuredNGWord.clear();
+                Bukkit.getOnlinePlayers().forEach(e -> NametagEdit.getApi().clearNametag(e));
                 sender.sendMessage(Message.SuccessMsg("NGワードをリセットしました."));
                 NGWord.bannedPlayers.clear();
                 sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのBANを解除しました."));

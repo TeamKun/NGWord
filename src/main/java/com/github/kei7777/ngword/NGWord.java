@@ -5,10 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class NGWord extends JavaPlugin {
@@ -33,10 +30,20 @@ public class NGWord extends JavaPlugin {
     }
 
     public void loadList() throws IOException {
-        BufferedReader in = new BufferedReader(new FileReader(new File(this.getDataFolder(), filename)));
+        BufferedReader reader = new BufferedReader(new FileReader(new File(this.getDataFolder(), filename)));
         String line;
         words.clear();
-        while ((line = in.readLine()) != null) words.add(line);
+        while ((line = reader.readLine()) != null) words.add(line);
+        reader.close();
+    }
+
+    public void saveList(List<String> words) throws IOException {
+        PrintWriter writer = new PrintWriter(new FileWriter(new File(this.getDataFolder(), filename), true));
+        for (String w : words) {
+            writer.println(w);
+        }
+        writer.flush();
+        writer.close();
     }
 
     public void setNG(Player p, String word) {

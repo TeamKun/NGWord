@@ -42,7 +42,7 @@ public class NGWordListener implements Listener {
                     @Override
                     public void run() {
                         NGWord.bannedPlayers.add(e.getPlayer());
-                        e.getPlayer().getLocation().getWorld().strikeLightningEffect(e.getPlayer().getLocation());
+                        e.getPlayer().getWorld().strikeLightningEffect(e.getPlayer().getLocation());
                         e.getPlayer().kickPlayer(ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()) + "\n\n");
                     }
                 }.runTask(this.plugin);

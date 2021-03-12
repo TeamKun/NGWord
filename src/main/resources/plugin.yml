@@ -3,8 +3,8 @@ version: ${project.version}
 main: com.github.kei7777.ngword.NGWord
 api-version: 1.15
 prefix: NGWord
-authors: [ Kei, Kamesuta ]
-depend: [ HolographicDisplays ]
+authors: [ Kei, Kamesuta, Maru-256 ]
+depend:
 description: NGWord
 website: https://github.com/Kei-7777
 
@@ -12,11 +12,12 @@ commands:
   ngword:
     aliases: [ ng ]
     permission: ngword
-    description: /ngword <list|pardon|random|reload|reset|set>
+    description: /ngword <add|list|pardon|random|reload|reset|set>
     usage: |-
+      /ngword add <word> [word...] NGワードを追加する
       /ngword list 登録単語一覧
       /ngword pardon <player> プレイヤーのBANを解除する
-      /ngword random <player> 全員のNGワードをランダムに設定する
+      /ngword random 全員のNGワードをランダムに設定する
       /ngword reload NGワードリストを再読み込みする
       /ngword reset 全員のNGワードとBANをリセット
       /ngword set <player> <word> NGワードを設定する
