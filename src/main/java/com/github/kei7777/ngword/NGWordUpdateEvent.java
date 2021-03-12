@@ -7,6 +7,7 @@ import org.bukkit.event.player.PlayerEvent;
 
 public class NGWordUpdateEvent extends PlayerEvent implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
+    private boolean isCancelled = false;
 
     public final boolean refresh;
 
@@ -21,12 +22,12 @@ public class NGWordUpdateEvent extends PlayerEvent implements Cancellable {
 
     @Override
     public boolean isCancelled() {
-        return false;
+        return isCancelled;
     }
 
     @Override
     public void setCancelled(boolean cancel) {
-
+        this.isCancelled = cancel;
     }
 
     @Override

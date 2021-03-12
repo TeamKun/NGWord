@@ -12,11 +12,13 @@ commands:
   ngword:
     aliases: [ ng ]
     permission: ngword
-    description: |-
-      /ngword word 単語一覧。
-      /ngword set <player> <word> 全員にNGワードを選択。
+    description: /ngword <word|set|reset|random|pardon>
+    usage: |-
+      /ngword word 単語一覧
+      /ngword set <player> <word> 全員にNGワードを選択
       /ngword reset 全員の選択されているNGワードをリセット
-      /ngword random
+      /ngword random <player> 全員のNGワードをランダムに設定する
+      /ngword pardon <player> プレイヤーのBANを解除する
 
 permissions:
   ngword:
