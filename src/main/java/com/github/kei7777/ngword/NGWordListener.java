@@ -29,7 +29,7 @@ public class NGWordListener implements Listener {
     @EventHandler
     public void onLogin(PlayerLoginEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
-            plugin.setNG(e.getPlayer(), NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()));
+            plugin.setNG(e.getPlayer(), NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0));
         }
     }
 
@@ -37,7 +37,7 @@ public class NGWordListener implements Listener {
     public void onChat(AsyncPlayerChatEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
             String raw = e.getMessage().replaceAll("§.", "");
-            if (raw.contains(NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()))) {
+            if (raw.contains(NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0))) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
-    List<String> subCmdList = Arrays.asList("add", "list", "pardon", "random", "reload", "reset", "set");
+    List<String> subCmdList = Arrays.asList("add", "color", "list", "pardon", "random", "reload", "reset", "set");
     NGWord plugin;
 
     public NGWordCommandExecutor(NGWord ngWord) {
@@ -37,7 +37,7 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 }
 
                 List<String> words = Arrays.stream(args).skip(1).collect(Collectors.toList());
-                NGWord.words.addAll(words);
+                NGWord.additionalWords.add(words);
                 try {
                     plugin.saveList(words);
                 } catch (IOException e) {
@@ -45,9 +45,26 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 }
                 sender.sendMessage(Message.SuccessMsg("NGワードを追加しました."));
                 return true;
+            case "color":
+                if (args.length < 2) {
+                    sender.sendMessage(Message.FailureMsg("/ngword color <name>"));
+                    return true;
+                }
+                try {
+                    plugin.NGWordColor = ChatColor.valueOf(args[1]);
+                } catch (Exception e) {
+                    sender.sendMessage(Message.FailureMsg(args[1] + "は存在しない色です."));
+                    return true;
+                }
+                plugin.getConfig().set("NGWordColor", plugin.NGWordColor.name());
+                NGWord.configuredNGWord.forEach((k, v) -> {
+                    plugin.setNG(k, v.get(0));
+                });
+                sender.sendMessage("NGワードの色を「" + plugin.NGWordColor + args[1] + ChatColor.RESET + "」" + ChatColor.GREEN + "へ変更しました.");
+                return true;
             case "list":
                 sender.sendMessage(Message.SuccessMsg("登録単語一覧"));
-                for (String word : NGWord.words) {
+                for (String word : NGWord.additionalWords.get(0)) {
                     sender.sendMessage(ChatColor.DARK_GREEN + " - " + word);
                 }
                 return true;
@@ -68,18 +85,18 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 return true;
             case "random":
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    Collections.shuffle(NGWord.words);
-                    NGWord.configuredNGWord.put(p.getUniqueId(), NGWord.words.get(0));
-                    plugin.setNG(p, NGWord.words.get(0));
+                    Collections.shuffle(NGWord.additionalWords);
+                    NGWord.configuredNGWord.put(p.getUniqueId(), NGWord.additionalWords.get(0));
+                    plugin.setNG(p, NGWord.additionalWords.get(0).get(0));
                 }
                 sender.sendMessage(Message.SuccessMsg("全てのプレイヤーにNGワードをランダムで配りました."));
                 return true;
             case "reload":
-                try {
-                    plugin.loadList();
+               /* try {
+                     plugin.loadList();
                 } catch (IOException e) {
                     sender.sendMessage(Message.FailureMsg("単語リスト読み込み時にエラーが発生しました."));
-                }
+                }*/
                 sender.sendMessage(Message.SuccessMsg("単語リストファイルをロードしました."));
                 return true;
             case "reset":
@@ -100,9 +117,9 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                     sender.sendMessage(Message.FailureMsg(name + "は存在しません."));
                     return true;
                 }
-                String word = Stream.of(args).skip(2).collect(Collectors.joining(" "));
+                List<String> word = Stream.of(args).skip(2).collect(Collectors.toList());
                 NGWord.configuredNGWord.put(p.getUniqueId(), word);
-                plugin.setNG(p, word);
+                plugin.setNG(p, word.get(0));
                 sender.sendMessage(Message.SuccessMsg(p.getName() + "にNGワードをセットしました."));
                 return true;
             }
@@ -121,6 +138,11 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
         String subCmd = args[0].toLowerCase();
         if (args.length == 2) {
             switch (subCmd) {
+                case "color":
+                    return Arrays.stream(ChatColor.values())
+                            .map(ChatColor::name)
+                            .filter(x -> x.startsWith(args[1]))
+                            .collect(Collectors.toList());
                 case "reset":
                     return Collections.emptyList();
                 case "pardon":
@@ -137,7 +159,8 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 3 && subCmd.equals("set"))
-            return NGWord.words.stream()
+            return NGWord.additionalWords.stream()
+                    .map(x -> x.get(0))
                     .filter(e -> e.startsWith(args[2]))
                     .collect(Collectors.toList());
         return Collections.emptyList();

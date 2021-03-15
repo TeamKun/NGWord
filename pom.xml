@@ -91,10 +91,6 @@
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -105,9 +101,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.sgtcaze</groupId>
-            <artifactId>nametagedit</artifactId>
-            <version>-dddfd61c0b-1</version>
+            <groupId>com.nametagedit.plugin</groupId>
+            <artifactId>NametagEdit</artifactId>
+            <version>4.4.10</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/NametagEdit.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
