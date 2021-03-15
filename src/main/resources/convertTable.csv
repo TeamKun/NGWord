@@ -1,124 +1,124 @@
-あ,a
-い,i
-う,u
-え,e
-お,o
-ー,-
-！,!
--,-
-？,?
-!,!
-?,?
-か,ka
-き,ki
-く,ku
-け,ke
-こ,ko
-か,ca
-く,cu
-こ,co
-が,ga
-ぎ,gi
-ぐ,gu
-げ,ge
-ご,go
-さ,sa
-し,si
-す,su
-せ,se
-そ,so
-ざ,za
-じ,zi
-ず,zu
-ぜ,ze
-ぞ,zo
+あ ,a
+い ,i
+う ,u
+え ,e
+お ,o
+ー ,-
+！ ,!
+- ,-
+？ ,?
+! ,!
+? ,?
+か ,ka
+き ,ki
+く ,ku
+け ,ke
+こ ,ko
+か ,ca
+く ,cu
+こ ,co
+が ,ga
+ぎ ,gi
+ぐ ,gu
+げ ,ge
+ご ,go
+さ ,sa
+し ,si
+す ,su
+せ ,se
+そ ,so
+ざ ,za
+じ ,zi
+ず ,zu
+ぜ ,ze
+ぞ ,zo
 じゃ,ja
-じ,ji
+じ ,ji
 じゅ,ju
 じぇ,je
 じょ,jo
-た,ta
-ち,ti
-つ,tu
-て,te
-と,to
-だ,da
-ぢ,di
-づ,du
-で,de
-ど,do
-な,na
-に,ni
-ぬ,nu
-ね,ne
-の,no
-は,ha
-ひ,hi
-ふ,hu
-へ,he
-ほ,ho
-ば,ba
-び,bi
-ぶ,bu
-べ,be
-ぼ,bo
-ぱ,pa
-ぴ,pi
-ぷ,pu
-ぺ,pe
-ぽ,po
+た ,ta
+ち ,ti
+つ ,tu
+て ,te
+と ,to
+だ ,da
+ぢ ,di
+づ ,du
+で ,de
+ど ,do
+な ,na
+に ,ni
+ぬ ,nu
+ね ,ne
+の ,no
+は ,ha
+ひ ,hi
+ふ ,hu
+へ ,he
+ほ ,ho
+ば ,ba
+び ,bi
+ぶ ,bu
+べ ,be
+ぼ ,bo
+ぱ ,pa
+ぴ ,pi
+ぷ ,pu
+ぺ ,pe
+ぽ ,po
 ヴぁ,va
 ヴぃ,vi
-ヴ,vu
+ヴ ,vu
 ヴぇ,ve
 ヴぉ,vo
 ふぁ,fa
 ふぃ,fi
-ふ,fu
+ふ ,fu
 ふぇ,fe
 ふぉ,fo
-ま,ma
-み,mi
-む,mu
-め,me
-も,mo
-や,ya
-い,yi
-ゆ,yu
+ま ,ma
+み ,mi
+む ,mu
+め ,me
+も ,mo
+や ,ya
+い ,yi
+ゆ ,yu
 いぇ,ye
-よ,yo
-ら,ra
-り,ri
-る,ru
-れ,re
-ろ,ro
-わ,wa
-ゐ,wi
-う,wu
-ゑ,we
-を,wo
-ん,nn
-つ,tsu
-ヵ,xka
-ヶ,xke
-ゎ,xwa
-っ,xtu
-っ,xtsu
-ヵ,lka
-ヶ,lke
-ゎ,lwa
-っ,ltu
-っ,ltsu
-ゃ,xya
-ぃ,xyi
-ゅ,xyu
-ぇ,xye
-ょ,xyo
-ゃ,lya
-ぃ,lyi
-ゅ,lyu
-ぇ,lye
-ょ,lyo
+よ ,yo
+ら ,ra
+り ,ri
+る ,ru
+れ ,re
+ろ ,ro
+わ ,wa
+ゐ ,wi
+う ,wu
+ゑ ,we
+を ,wo
+ん ,nn
+つ ,tsu
+ヵ ,xka
+ヶ ,xke
+ゎ ,xwa
+っ ,xtu
+っ ,xtsu
+ヵ ,lka
+ヶ ,lke
+ゎ ,lwa
+っ ,ltu
+っ ,ltsu
+ゃ ,xya
+ぃ ,xyi
+ゅ ,xyu
+ぇ ,xye
+ょ ,xyo
+ゃ ,lya
+ぃ ,lyi
+ゅ ,lyu
+ぇ ,lye
+ょ ,lyo
 きゃ,kya
 きぃ,kyi
 きゅ,kyu
@@ -135,7 +135,7 @@
 しぇ,sye
 しょ,syo
 しゃ,sha
-し,shi
+し ,shi
 しゅ,shu
 しぇ,she
 しょ,sho
@@ -160,7 +160,7 @@
 ちぇ,cye
 ちょ,cyo
 ちゃ,cha
-ち,chi
+ち ,chi
 ちゅ,chu
 ちぇ,che
 ちょ,cho
@@ -209,6 +209,26 @@
 りゅ,ryu
 りぇ,rye
 りょ,ryo
-ん,m
-ん,n
-づ,dzu
+ん ,n
+ん ,m
+づ ,dzu
+1 ,1
+2 ,2
+3 ,3
+4 ,4
+5 ,5
+6 ,6
+7 ,7
+8 ,8
+9 ,9
+0 ,0
+１ ,1
+２ ,2
+３ ,3
+４ ,4
+５ ,5
+６ ,6
+７ ,7
+８ ,8
+９ ,9
+０ ,0

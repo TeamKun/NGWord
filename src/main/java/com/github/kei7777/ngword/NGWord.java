@@ -12,8 +12,8 @@ import java.io.*;
 import java.util.*;
 
 public class NGWord extends JavaPlugin {
-    String filename = "words.yml";
-    String filename2 = "additionalWords.csv";
+    String wordsFilename = "words.yml";
+    String addWordsFilename = "additionalWords.csv";
     ChatColor NGWordColor;
     static Map<UUID, List<String>> configuredNGWord = new HashMap<>();
     static List<List<String>> additionalWords = new ArrayList<>();
@@ -23,15 +23,12 @@ public class NGWord extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        saveResource(wordsFilename, false);
+        saveResource(addWordsFilename, false);
         FileConfiguration config = getConfig();
-        saveResource("convertTable.csv", true);
         NGWordColor = ChatColor.valueOf(config.getString("NGWordColor"));
         try {
             getDataFolder().mkdir();
-            File words = new File(getDataFolder(), filename);
-            if (!words.exists()) saveResource(filename, false);
-            File additional = new File(getDataFolder(), filename2);
-            if (!additional.exists()) saveResource(filename2, false);
             //  loadList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -39,22 +36,45 @@ public class NGWord extends JavaPlugin {
             return;
         }
 
-
         converter = new HiraganaConverter(this);
 
-        try (InputStreamReader in = new InputStreamReader(getResource(filename), "UTF-8")) {
+        //words.ymlを読み込み設定を行う
+        try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(getDataFolder(), wordsFilename)), "UTF-8")) {
             FileConfiguration wordsyml = YamlConfiguration.loadConfiguration(in);
-            List<HashMap<String, String>> w = ((List<HashMap<String, String>>) wordsyml.getList("Words"));
+            List<HashMap<String, ?>> w = ((List<HashMap<String, ?>>) wordsyml.getList("Words"));
+            for (HashMap<String, ?> map : w) {
+                try {
+                    UUID uuid = UUID.fromString(map.get("UUID").toString());
+                    String mcid = map.get("Name").toString();
+                    List<String> ngwords = ((List<String>) map.get("NGWord"));
+                    List<String> prons = ((List<String>) map.get("Pron"));
+                    for (String ng : ngwords) {
+                        configuredNGWord.put(uuid, new ArrayList<>());
+                        configuredNGWord.get(uuid).add(ng);
+                        configuredNGWord.get(uuid).add(converter.toKatakana(ng));
+                    }
+                    for (String pron : prons) {
+                        configuredNGWord.get(uuid).add(pron);
+                        configuredNGWord.get(uuid).add(converter.toKatakana(pron));
+                        configuredNGWord.get(uuid).addAll(converter.toRomaji(pron));
+                    }
+                    setNG(uuid, ngwords.get(0));
+                } catch (NullPointerException e) {
+                    //空のフィールドがあった場合は飛ばす
+                    continue;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        getLogger().info(converter.convert("てすとっとしょ").toString());
+
+
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
         getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
     }
 
     /*
-    public void loadList() throws IOException {
+    public void loadWordsFile() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(new File(this.getDataFolder(), filename)));
         String line;
         words.clear();
@@ -63,7 +83,7 @@ public class NGWord extends JavaPlugin {
     }*/
 
     public void saveList(List<String> words) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileWriter(new File(this.getDataFolder(), filename), true));
+        PrintWriter writer = new PrintWriter(new FileWriter(new File(this.getDataFolder(), wordsFilename), true));
         for (String w : words) {
             writer.println(w);
         }
@@ -79,4 +99,6 @@ public class NGWord extends JavaPlugin {
         Player p = Bukkit.getPlayer(uuid);
         if (p != null) setNG(p, word);
     }
+
+
 }

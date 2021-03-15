@@ -9,6 +9,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.text.Normalizer;
 import java.util.stream.Collectors;
 
 public class NGWordListener implements Listener {
@@ -19,9 +20,9 @@ public class NGWordListener implements Listener {
     }
 
     @EventHandler
-    public void onJoin(AsyncPlayerPreLoginEvent e) {
+    public void onPreLogin(AsyncPlayerPreLoginEvent e) {
         if (NGWord.bannedPlayers.stream().map(x -> x.getUniqueId()).collect(Collectors.toList()).contains(e.getUniqueId())) {
-            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getUniqueId()) + "\n\n");
+            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getUniqueId()).get(0) + "\n\n");
             return;
         }
     }
@@ -36,18 +37,21 @@ public class NGWordListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
-            String raw = e.getMessage().replaceAll("§.", "");
-            if (raw.contains(NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0))) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        NGWord.bannedPlayers.add(e.getPlayer());
-                        e.getPlayer().getWorld().strikeLightningEffect(e.getPlayer().getLocation());
-                        e.getPlayer().kickPlayer(ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()) + "\n\n");
-                    }
-                }.runTask(this.plugin);
-                Bukkit.broadcastMessage(ChatColor.RED + e.getPlayer().getName() + "がNGワードを発言しました！！ (" + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()) + ")");
+            String raw = Normalizer.normalize(e.getMessage().replaceAll("§.", ""), Normalizer.Form.NFKC).replaceAll(" ", "");
+            for (String ng : NGWord.configuredNGWord.get(e.getPlayer().getUniqueId())) {
+                if (raw.contains(ng)) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            NGWord.bannedPlayers.add(e.getPlayer());
+                            e.getPlayer().getWorld().strikeLightningEffect(e.getPlayer().getLocation());
+                            e.getPlayer().kickPlayer(ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0) + "\n\n");
+                        }
+                    }.runTask(this.plugin);
+                    Bukkit.broadcastMessage(ChatColor.RED + e.getPlayer().getName() + "がNGワードを発言しました！！ (" + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()) + ")");
+                }
             }
+
         }
     }
 }
