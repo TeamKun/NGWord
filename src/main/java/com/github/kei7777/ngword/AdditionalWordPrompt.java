@@ -20,8 +20,8 @@ import java.util.List;
 public class AdditionalWordPrompt extends StringPrompt {
     HiraganaConverter converter;
     File dataFolder;
-    String firstMessage = ChatColor.LIGHT_PURPLE + "NGワードを入力してください.\n複数ある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.";
-    String secondMessage = ChatColor.LIGHT_PURPLE + "NGワードに対応する読み方を平仮名で入力してください\n複数ある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.";
+    String firstMessage = ChatColor.LIGHT_PURPLE + "NGワードを入力してください.\n複数入力する必要がある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.";
+    String secondMessage = ChatColor.LIGHT_PURPLE + "NGワードに対応する読み方を平仮名で入力してください\n複数入力する必要がある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.";
     int count = 0;
     List<String> ngwords;
     List<String> prons;
