@@ -22,7 +22,7 @@ public class NGWordListener implements Listener {
     @EventHandler
     public void onPreLogin(AsyncPlayerPreLoginEvent e) {
         if (NGWord.bannedPlayers.stream().map(x -> x.getUniqueId()).collect(Collectors.toList()).contains(e.getUniqueId())) {
-            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getUniqueId()).get(0) + "\n\n");
+            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + plugin.configuredNGWord.get(e.getUniqueId()).get(0) + "\n\n");
             return;
         }
     }
@@ -37,7 +37,8 @@ public class NGWordListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
-            String raw = Normalizer.normalize(e.getMessage().replaceAll("§.", ""), Normalizer.Form.NFKC).replaceAll(" ", "");
+            //チャット文字列から色コードを削除 Normalizerで半角全角正規化 スペースの削除 大文字を小文字に変換 片仮名を平仮名に変換
+            String raw = plugin.converter.toHiragana(Normalizer.normalize(e.getMessage().replaceAll("§.", ""), Normalizer.Form.NFKC).replaceAll(" ", "").toLowerCase());
             for (String ng : NGWord.configuredNGWord.get(e.getPlayer().getUniqueId())) {
                 if (raw.contains(ng)) {
                     new BukkitRunnable() {
@@ -45,10 +46,10 @@ public class NGWordListener implements Listener {
                         public void run() {
                             NGWord.bannedPlayers.add(e.getPlayer());
                             e.getPlayer().getWorld().strikeLightningEffect(e.getPlayer().getLocation());
-                            e.getPlayer().kickPlayer(ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0) + "\n\n");
+                            e.getPlayer().kickPlayer(ChatColor.RED + "\nあなたはNGワードを発言したため入ることができません！\nあなたのNGワード: " + plugin.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0) + "\n\n");
                         }
                     }.runTask(this.plugin);
-                    Bukkit.broadcastMessage(ChatColor.RED + e.getPlayer().getName() + "がNGワードを発言しました！！ (" + NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()) + ")");
+                    Bukkit.broadcastMessage(ChatColor.RED + e.getPlayer().getName() + "がNGワードを発言しました！！ (" + plugin.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0) + ")");
                 }
             }
 

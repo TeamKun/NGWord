@@ -8,87 +8,112 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
+import java.util.logging.Level;
 
 public class NGWord extends JavaPlugin {
-    String wordsFilename = "words.yml";
-    String addWordsFilename = "additionalWords.csv";
+    String ngwordsFilename = "ngwords.yml";
+    static String addWordsFilename = "additionalWords.yml";
     ChatColor NGWordColor;
     static Map<UUID, List<String>> configuredNGWord = new HashMap<>();
-    static List<List<String>> additionalWords = new ArrayList<>();
+    static Map<String, List<String>> ngwords = new HashMap<>();
+    static Map<String, List<String>> additionalNGWords = new HashMap<>();
     static List<Player> bannedPlayers = new ArrayList<>();
     HiraganaConverter converter;
 
     @Override
     public void onEnable() {
+        getDataFolder().mkdir();
         saveDefaultConfig();
-        saveResource(wordsFilename, false);
+        saveResource(ngwordsFilename, false);
         saveResource(addWordsFilename, false);
         FileConfiguration config = getConfig();
         NGWordColor = ChatColor.valueOf(config.getString("NGWordColor"));
+        converter = new HiraganaConverter();
+
         try {
-            getDataFolder().mkdir();
-            //  loadList();
-        } catch (Exception e) {
+            Map<UUID, List<String>> map = loadNGWordsFile();
+            configuredNGWord = map;
+            for (UUID uuid : map.keySet()) {
+                ngwords.put(map.get(uuid).get(0), map.get(uuid));
+                setNG(uuid, map.get(uuid).get(0));
+            }
+        } catch (IOException | NullPointerException e) {
+            getLogger().log(Level.WARNING, ngwordsFilename + "読込中にエラーが発生しました.");
             e.printStackTrace();
-            this.setEnabled(false);
-            return;
         }
 
-        converter = new HiraganaConverter(this);
+        try {
+            List<List<String>> lists = loadAddWordsFile();
+            for (List<String> list : lists) {
+                additionalNGWords.put(list.get(0), list);
+            }
+        } catch (IOException | NullPointerException e) {
+            getLogger().log(Level.WARNING, addWordsFilename + "読込中にエラーが発生しました.");
+            e.printStackTrace();
+        }
 
-        //words.ymlを読み込み設定を行う
-        try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(getDataFolder(), wordsFilename)), "UTF-8")) {
+        
+        getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
+        getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
+    }
+
+    //words.ymlを読み込みMapリストを作成する
+    public Map<UUID, List<String>> loadNGWordsFile() throws IOException, NullPointerException {
+        Map<UUID, List<String>> corr = new HashMap<>();
+        try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(getDataFolder(), ngwordsFilename)), "UTF-8")) {
             FileConfiguration wordsyml = YamlConfiguration.loadConfiguration(in);
             List<HashMap<String, ?>> w = ((List<HashMap<String, ?>>) wordsyml.getList("Words"));
             for (HashMap<String, ?> map : w) {
                 try {
                     UUID uuid = UUID.fromString(map.get("UUID").toString());
-                    String mcid = map.get("Name").toString();
                     List<String> ngwords = ((List<String>) map.get("NGWord"));
                     List<String> prons = ((List<String>) map.get("Pron"));
                     for (String ng : ngwords) {
-                        configuredNGWord.put(uuid, new ArrayList<>());
-                        configuredNGWord.get(uuid).add(ng);
-                        configuredNGWord.get(uuid).add(converter.toKatakana(ng));
+                        corr.put(uuid, new ArrayList<>());
+                        corr.get(uuid).add(ng);
+                        corr.get(uuid).add(converter.toHiragana(ng));
                     }
                     for (String pron : prons) {
-                        configuredNGWord.get(uuid).add(pron);
-                        configuredNGWord.get(uuid).add(converter.toKatakana(pron));
-                        configuredNGWord.get(uuid).addAll(converter.toRomaji(pron));
+                        corr.get(uuid).add(pron);
+                        corr.get(uuid).addAll(converter.toRomaji(pron));
                     }
-                    setNG(uuid, ngwords.get(0));
+
                 } catch (NullPointerException e) {
                     //空のフィールドがあった場合は飛ばす
-                    continue;
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-
-        getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
-        getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
+        return corr;
     }
 
-    /*
-    public void loadWordsFile() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(new File(this.getDataFolder(), filename)));
-        String line;
-        words.clear();
-        while ((line = reader.readLine()) != null) words.add(line);
-        reader.close();
-    }*/
-
-    public void saveList(List<String> words) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileWriter(new File(this.getDataFolder(), wordsFilename), true));
-        for (String w : words) {
-            writer.println(w);
+    //additionalWords.ymlを読み込みリストを作成する.
+    public List<List<String>> loadAddWordsFile() throws IOException, NullPointerException {
+        List<List<String>> lists = new ArrayList<>();
+        try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(getDataFolder(), addWordsFilename)), "UTF-8")) {
+            FileConfiguration addwordsyml = YamlConfiguration.loadConfiguration(in);
+            List<HashMap<String, List<String>>> aw = ((List<HashMap<String, List<String>>>) addwordsyml.getList("Words"));
+            for (HashMap<String, List<String>> map : aw) {
+                try {
+                    List<String> list = new ArrayList<>();
+                    for (String ng : map.get("NGWord")) {
+                        list.add(ng);
+                    }
+                    for (String pron : map.get("Pron")) {
+                        list.add(pron);
+                        list.addAll(converter.toRomaji(pron));
+                    }
+                    lists.add(list);
+                } catch (NullPointerException e) {
+                    //空のフィールドがあった場合は飛ばす
+                }
+            }
         }
-        writer.flush();
-        writer.close();
+        return lists;
     }
 
     public void setNG(Player p, String word) {
@@ -99,6 +124,4 @@ public class NGWord extends JavaPlugin {
         Player p = Bukkit.getPlayer(uuid);
         if (p != null) setNG(p, word);
     }
-
-
 }

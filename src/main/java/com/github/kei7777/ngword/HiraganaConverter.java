@@ -1,14 +1,12 @@
 package com.github.kei7777.ngword;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class HiraganaConverter {
-    JavaPlugin plugin;
     private final List<Character> komoji = Arrays.asList(
             'ヵ',
             'ヶ',
@@ -30,9 +28,8 @@ public class HiraganaConverter {
 
     private Map<String, List<String>> convertTable;
 
-    HiraganaConverter(JavaPlugin plugin) {
-        this.plugin = plugin;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(plugin.getResource("convertTable.csv"), "UTF-8"))) {
+    HiraganaConverter() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getResource("convertTable.csv"), "UTF-8"))) {
             String line;
             convertTable = new HashMap<>();
             while (((line = reader.readLine())) != null) {
@@ -58,7 +55,12 @@ public class HiraganaConverter {
             corr.add(i, new ArrayList<String>() {{
                 add("");
             }});
-            corr.add(i, convertTable.get(String.format("%c", s.charAt(i))));
+            String letter = String.format("%c", s.charAt(i));
+            if (!convertTable.containsKey(letter)) {
+                corr.add(i, Collections.singletonList(letter));
+            } else {
+                corr.add(i, convertTable.get(letter));
+            }
             totalCombs *= corr.get(i).size();
         }
         List<String> res = comb(totalCombs, corr);
@@ -70,13 +72,18 @@ public class HiraganaConverter {
             youon.add(i, new ArrayList<String>() {{
                 add("");
             }});
-            if (i < s.length() - 1 && komoji.contains((s.charAt(i + 1)))) {
-                youon.add(i, convertTable.get(String.format("%c%c", s.charAt(i), s.charAt(i + 1))));
-                totalCombs *= youon.get(i).size();
-                i++;
-                continue;
+            String letter = String.format("%c", s.charAt(i));
+            if (!convertTable.containsKey(letter)) {
+                youon.add(i, Collections.singletonList(letter));
+            } else {
+                if (i < s.length() - 1 && komoji.contains((s.charAt(i + 1)))) {
+                    youon.add(i, convertTable.get(String.format("%c%c", s.charAt(i), s.charAt(i + 1))));
+                    totalCombs *= youon.get(i).size();
+                    i++;
+                    continue;
+                }
+                youon.add(i, convertTable.get(String.format("%c", s.charAt(i))));
             }
-            youon.add(i, convertTable.get(String.format("%c", s.charAt(i))));
             totalCombs *= youon.get(i).size();
         }
         res.addAll(comb(totalCombs, youon));
@@ -88,14 +95,19 @@ public class HiraganaConverter {
             sokuon.add(i, new ArrayList<String>() {{
                 add("");
             }});
-            if (s.charAt(i) == 'っ') {
-                List<String> tmp = convertTable.get(String.format("%c", s.charAt(i + 1)));
-                sokuon.add(i, tmp.stream().map(x -> String.format("%c%s", x.charAt(0), x)).collect(Collectors.toList()));
-                totalCombs *= sokuon.get(i).size();
-                i++;
+            String letter = String.format("%c", s.charAt(i));
+            if (!convertTable.containsKey(letter)) {
+                sokuon.add(i, Collections.singletonList(letter));
             } else {
-                sokuon.add(i, convertTable.get(String.format("%c", s.charAt(i))));
-                totalCombs *= sokuon.get(i).size();
+                if (s.charAt(i) == 'っ') {
+                    List<String> tmp = convertTable.get(String.format("%c", s.charAt(i + 1)));
+                    sokuon.add(i, tmp.stream().map(x -> String.format("%c%s", x.charAt(0), x)).collect(Collectors.toList()));
+                    totalCombs *= sokuon.get(i).size();
+                    i++;
+                } else {
+                    sokuon.add(i, convertTable.get(String.format("%c", s.charAt(i))));
+                    totalCombs *= sokuon.get(i).size();
+                }
             }
         }
         res.addAll(comb(totalCombs, sokuon));
@@ -107,38 +119,43 @@ public class HiraganaConverter {
             yousoku.add(i, new ArrayList<String>() {{
                 add("");
             }});
-            if (s.charAt(i) == 'っ') {
-                List<String> tmp;
-                if (i < s.length() - 2 && komoji.contains(s.charAt(i + 2))) {
-                    tmp = convertTable.get(String.format("%c%c", s.charAt(i + 1), s.charAt(i + 2)));
-                    tmp = tmp.stream().map(x -> String.format("%c%s", x.charAt(0), x)).collect(Collectors.toList());
-                    yousoku.add(i, tmp);
-                    totalCombs *= yousoku.get(i).size();
-                    i += 2;
-                } else {
-                    tmp = convertTable.get(String.format("%c", s.charAt(i + 1)));
-                    tmp = tmp.stream().map(x -> String.format("%c%s", x.charAt(0), x)).collect(Collectors.toList());
-                    yousoku.add(i, tmp);
+            String letter = String.format("%c", s.charAt(i));
+            if (!convertTable.containsKey(letter)) {
+                yousoku.add(i, Collections.singletonList(letter));
+            } else {
+                if (s.charAt(i) == 'っ') {
+                    List<String> tmp;
+                    if (i < s.length() - 2 && komoji.contains(s.charAt(i + 2))) {
+                        tmp = convertTable.get(String.format("%c%c", s.charAt(i + 1), s.charAt(i + 2)));
+                        tmp = tmp.stream().map(x -> String.format("%c%s", x.charAt(0), x)).collect(Collectors.toList());
+                        yousoku.add(i, tmp);
+                        totalCombs *= yousoku.get(i).size();
+                        i += 2;
+                    } else {
+                        tmp = convertTable.get(String.format("%c", s.charAt(i + 1)));
+                        tmp = tmp.stream().map(x -> String.format("%c%s", x.charAt(0), x)).collect(Collectors.toList());
+                        yousoku.add(i, tmp);
+                        totalCombs *= yousoku.get(i).size();
+                        i++;
+                    }
+                } else if (i < s.length() - 1 && komoji.contains((s.charAt(i + 1)))) {
+                    yousoku.add(i, convertTable.get(String.format("%c%c", s.charAt(i), s.charAt(i + 1))));
                     totalCombs *= yousoku.get(i).size();
                     i++;
+                } else {
+                    yousoku.add(i, convertTable.get(String.format("%c", s.charAt(i))));
+                    totalCombs *= yousoku.get(i).size();
                 }
-            } else if (i < s.length() - 1 && komoji.contains((s.charAt(i + 1)))) {
-                yousoku.add(i, convertTable.get(String.format("%c%c", s.charAt(i), s.charAt(i + 1))));
-                totalCombs *= yousoku.get(i).size();
-                i++;
-            } else {
-                yousoku.add(i, convertTable.get(String.format("%c", s.charAt(i))));
-                totalCombs *= yousoku.get(i).size();
             }
         }
         res.addAll(comb(totalCombs, yousoku));
         return res.stream().distinct().collect(Collectors.toList());
     }
 
-    public String toKatakana(String str) {
+    public String toKatakana(String s) {
         StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < str.length(); i++) {
-            char code = str.charAt(i);
+        for (int i = 0; i < s.length(); i++) {
+            char code = s.charAt(i);
             if ((code >= 0x3041) && (code <= 0x3093)) {
                 buf.append((char) (code + 0x60));
             } else {
@@ -148,14 +165,27 @@ public class HiraganaConverter {
         return buf.toString();
     }
 
+    public String toHiragana(String s) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < s.length(); i++) {
+            char code = s.charAt(i);
+            if ((code >= 0x30a1) && (code <= 0x30f3)) {
+                buf.append((char) (code - 0x60));
+            } else {
+                buf.append(code);
+            }
+        }
+        return buf.toString();
+    }
+
     //TODO Refactor
-    private List<String> comb(int n, List<List<String>> src) {
-        List<String> comb = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
+    private List<String> comb(int total, List<List<String>> src) {
+        List<String> comb = new ArrayList<>(total);
+        for (int i = 0; i < total; i++) {
             comb.add("");
         }
 
-        int rep = n;
+        int rep = total;
         for (List<String> romajis : src) {
             rep /= romajis.size();
             for (int i = 0; i < comb.size(); i += romajis.size() * rep) {
@@ -167,5 +197,9 @@ public class HiraganaConverter {
             }
         }
         return comb;
+    }
+
+    private InputStream getResource(String path) {
+        return this.getClass().getClassLoader().getResourceAsStream(path);
     }
 }

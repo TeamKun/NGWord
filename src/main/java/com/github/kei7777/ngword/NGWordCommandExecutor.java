@@ -7,126 +7,150 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.NullConversationPrefix;
 import org.bukkit.entity.Player;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
-    List<String> subCmdList = Arrays.asList("add", "color", "list", "pardon", "random", "reload", "reset", "set");
     NGWord plugin;
+    List<String> subCmdList = Arrays.asList("add", "color", "list", "pardon", "random", "reload", "reset", "set");
+    Map<String, SubCommand> subCmds = new HashMap<>();
+    ConversationFactory factory;
 
     public NGWordCommandExecutor(NGWord ngWord) {
         this.plugin = ngWord;
+        setupSubCmds();
+        factory = new ConversationFactory(plugin)
+                .withModality(true)
+                .withPrefix(new NullConversationPrefix())
+                .withTimeout(120)
+                .thatExcludesNonPlayersWithMessage("test console");
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) return false;
-
         String subCmd = args[0].toLowerCase();
-        switch (subCmd) {
-            case "add":
-                if (args.length < 2) {
-                    sender.sendMessage(Message.FailureMsg("/ngword add <word> [word...]"));
-                    return true;
-                }
-
-                List<String> words = Arrays.stream(args).skip(1).collect(Collectors.toList());
-                NGWord.additionalWords.add(words);
-                try {
-                    plugin.saveList(words);
-                } catch (IOException e) {
-                    sender.sendMessage(Message.FailureMsg("書き込み中にエラーが発生しました."));
-                }
-                sender.sendMessage(Message.SuccessMsg("NGワードを追加しました."));
-                return true;
-            case "color":
-                if (args.length < 2) {
-                    sender.sendMessage(Message.FailureMsg("/ngword color <name>"));
-                    return true;
-                }
-                try {
-                    plugin.NGWordColor = ChatColor.valueOf(args[1]);
-                } catch (Exception e) {
-                    sender.sendMessage(Message.FailureMsg(args[1] + "は存在しない色です."));
-                    return true;
-                }
-                plugin.getConfig().set("NGWordColor", plugin.NGWordColor.name());
-                NGWord.configuredNGWord.forEach((k, v) -> {
-                    plugin.setNG(k, v.get(0));
-                });
-                sender.sendMessage("NGワードの色を「" + plugin.NGWordColor + args[1] + ChatColor.RESET + "」" + ChatColor.GREEN + "へ変更しました.");
-                return true;
-            case "list":
-                sender.sendMessage(Message.SuccessMsg("登録単語一覧"));
-                for (String word : NGWord.additionalWords.get(0)) {
-                    sender.sendMessage(ChatColor.DARK_GREEN + " - " + word);
-                }
-                return true;
-            case "pardon":
-                if (args.length < 2) {
-                    sender.sendMessage(Message.FailureMsg("/ngword pardon <player>"));
-                    return true;
-                }
-
-                if (args[1].equalsIgnoreCase("@a")) {
-                    NGWord.bannedPlayers.clear();
-                    sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのBANを解除しました."));
-                } else {
-                    String name = args[1];
-                    NGWord.bannedPlayers.removeIf(x -> x.getName().equalsIgnoreCase(name));
-                    sender.sendMessage(Message.SuccessMsg(name + "のBANを解除しました."));
-                }
-                return true;
-            case "random":
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    Collections.shuffle(NGWord.additionalWords);
-                    NGWord.configuredNGWord.put(p.getUniqueId(), NGWord.additionalWords.get(0));
-                    plugin.setNG(p, NGWord.additionalWords.get(0).get(0));
-                }
-                sender.sendMessage(Message.SuccessMsg("全てのプレイヤーにNGワードをランダムで配りました."));
-                return true;
-            case "reload":
-               /* try {
-                     plugin.loadList();
-                } catch (IOException e) {
-                    sender.sendMessage(Message.FailureMsg("単語リスト読み込み時にエラーが発生しました."));
-                }*/
-                sender.sendMessage(Message.SuccessMsg("単語リストファイルをロードしました."));
-                return true;
-            case "reset":
-                NGWord.configuredNGWord.clear();
-                Bukkit.getOnlinePlayers().forEach(e -> NametagEdit.getApi().clearNametag(e));
-                sender.sendMessage(Message.SuccessMsg("NGワードをリセットしました."));
-                NGWord.bannedPlayers.clear();
-                sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのBANを解除しました."));
-                return true;
-            case "set": {
-                if (args.length < 3) {
-                    sender.sendMessage(Message.FailureMsg("/ngword set <player> <word>"));
-                    return true;
-                }
-                String name = args[1];
-                Player p = Bukkit.getPlayer(name);
-                if (p == null) {
-                    sender.sendMessage(Message.FailureMsg(name + "は存在しません."));
-                    return true;
-                }
-                List<String> word = Stream.of(args).skip(2).collect(Collectors.toList());
-                NGWord.configuredNGWord.put(p.getUniqueId(), word);
-                plugin.setNG(p, word.get(0));
-                sender.sendMessage(Message.SuccessMsg(p.getName() + "にNGワードをセットしました."));
-                return true;
-            }
-        }
-        return false;
+        return subCmds.get(subCmd).execute(sender, command, args);
     }
 
+    private void setupSubCmds() {
+        subCmds.put("add", (sender, command, args) -> {
+            factory.withFirstPrompt(new AdditionalWordPrompt(plugin))
+                    .buildConversation(((Conversable) sender)).begin();
+            return true;
+        });
+        subCmds.put("color", (sender, command, args) -> {
+            if (args.length < 2) {
+                sender.sendMessage(Message.FailureMsg("/ngword color <name>"));
+                return true;
+            }
+            try {
+                plugin.NGWordColor = ChatColor.valueOf(args[1]);
+            } catch (Exception e) {
+                sender.sendMessage(Message.FailureMsg(args[1] + "は存在しない色です."));
+                return true;
+            }
+            plugin.getConfig().set("NGWordColor", plugin.NGWordColor.name());
+            plugin.saveConfig();
+            NGWord.configuredNGWord.forEach((k, v) -> {
+                plugin.setNG(k, v.get(0));
+            });
+            sender.sendMessage("NGワードの色を「" + plugin.NGWordColor + args[1] + ChatColor.RESET + "」" + ChatColor.GREEN + "へ変更しました.");
+            return true;
+        });
+        subCmds.put("list", (sender, command, args) -> {
+            sender.sendMessage(Message.SuccessMsg("追加登録単語一覧"));
+            for (String key : NGWord.additionalNGWords.keySet()) {
+                sender.sendMessage(ChatColor.DARK_GREEN + " - " + key);
+            }
+            return true;
+        });
+        subCmds.put("pardon", (sender, command, args) -> {
+            if (args.length < 2) {
+                sender.sendMessage(Message.FailureMsg("/ngword pardon <player>"));
+                return true;
+            }
+
+            if (args[1].equalsIgnoreCase("@a")) {
+                NGWord.bannedPlayers.clear();
+                sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのBANを解除しました."));
+            } else {
+                String name = args[1];
+                NGWord.bannedPlayers.removeIf(x -> x.getName().equalsIgnoreCase(name));
+                sender.sendMessage(Message.SuccessMsg(name + "のBANを解除しました."));
+            }
+            return true;
+        });
+        subCmds.put("random", (sender, command, args) -> {
+            List<List<String>> ngwords = new ArrayList<>();
+            for (String key : NGWord.ngwords.keySet()) {
+                ngwords.add(NGWord.ngwords.get(key));
+            }
+            for (String key : NGWord.additionalNGWords.keySet()) {
+                ngwords.add(NGWord.additionalNGWords.get(key));
+            }
+
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Collections.shuffle(ngwords);
+                NGWord.configuredNGWord.put(p.getUniqueId(), ngwords.get(0));
+                plugin.setNG(p, ngwords.get(0).get(0));
+                ngwords.remove(ngwords.get(0));
+            }
+            sender.sendMessage(Message.SuccessMsg("全てのプレイヤーにNGワードをランダムで設定しました."));
+            return true;
+        });
+        subCmds.put("reload", (sender, command, args) -> {
+            try {
+                Map<UUID, List<String>> map = plugin.loadNGWordsFile();
+                for (UUID uuid : map.keySet()) {
+                    plugin.setNG(uuid, map.get(uuid).get(0));
+                }
+
+                List<List<String>> lists = plugin.loadAddWordsFile();
+                for (List<String> list : lists) {
+                    NGWord.additionalNGWords.put(list.get(0), list);
+                }
+            } catch (Exception e) {
+                sender.sendMessage(Message.FailureMsg("リロードに失敗しました."));
+            }
+            sender.sendMessage(Message.SuccessMsg("リロードが完了しました."));
+            return true;
+        });
+        subCmds.put("reset", (sender, command, args) -> {
+            NGWord.configuredNGWord.clear();
+            Bukkit.getOnlinePlayers().forEach(e -> NametagEdit.getApi().clearNametag(e));
+            sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのNGワードを削除しました."));
+            NGWord.bannedPlayers.clear();
+            sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのBANを解除しました."));
+            return true;
+        });
+        subCmds.put("set", (sender, command, args) -> {
+            if (args.length < 3) {
+                sender.sendMessage(Message.FailureMsg("/ngword set <player> <word>"));
+                return true;
+            }
+            String name = args[1];
+            Player p = Bukkit.getPlayer(name);
+            if (p == null) {
+                sender.sendMessage(Message.FailureMsg(name + "は存在しません."));
+                return true;
+            }
+            if (!NGWord.additionalNGWords.containsKey(args[2])) {
+                sender.sendMessage(Message.FailureMsg(args[2] + "は登録されていません."));
+            }
+            List<String> words = NGWord.additionalNGWords.get(args[2]);
+            NGWord.configuredNGWord.put(p.getUniqueId(), words);
+            plugin.setNG(p, words.get(0));
+            sender.sendMessage(Message.SuccessMsg(p.getName() + "にNGワードをセットしました."));
+            return true;
+        });
+    }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -159,8 +183,7 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 3 && subCmd.equals("set"))
-            return NGWord.additionalWords.stream()
-                    .map(x -> x.get(0))
+            return NGWord.additionalNGWords.keySet().stream()
                     .filter(e -> e.startsWith(args[2]))
                     .collect(Collectors.toList());
         return Collections.emptyList();
