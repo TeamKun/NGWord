@@ -114,7 +114,6 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                     NGWord.ngwords.put(map.get(uuid).get(0), map.get(uuid));
                 }
                 NGWord.configuredNGWord = map;
-                Bukkit.getLogger().info(map.toString());
                 Map<String, List<String>> addMap = new HashMap<>();
                 List<List<String>> lists = plugin.loadAddWordsFile();
                 for (List<String> list : lists) {
