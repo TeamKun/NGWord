@@ -56,8 +56,6 @@ public class NGWord extends JavaPlugin {
             getLogger().log(Level.WARNING, addWordsFilename + "読込中にエラーが発生しました.");
             e.printStackTrace();
         }
-
-        
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
         getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
     }
@@ -74,11 +72,13 @@ public class NGWord extends JavaPlugin {
                     List<String> ngwords = ((List<String>) map.get("NGWord"));
                     List<String> prons = ((List<String>) map.get("Pron"));
                     for (String ng : ngwords) {
+                        ng = ng.toLowerCase();
                         corr.put(uuid, new ArrayList<>());
                         corr.get(uuid).add(ng);
                         corr.get(uuid).add(converter.toHiragana(ng));
                     }
                     for (String pron : prons) {
+                        pron = pron.toLowerCase();
                         corr.get(uuid).add(pron);
                         corr.get(uuid).addAll(converter.toRomaji(pron));
                     }

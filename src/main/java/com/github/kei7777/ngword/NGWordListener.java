@@ -3,6 +3,7 @@ package com.github.kei7777.ngword;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
@@ -27,7 +28,7 @@ public class NGWordListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onLogin(PlayerLoginEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
             plugin.setNG(e.getPlayer(), NGWord.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0));

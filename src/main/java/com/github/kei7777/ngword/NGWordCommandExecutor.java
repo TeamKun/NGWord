@@ -108,14 +108,19 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
         subCmds.put("reload", (sender, command, args) -> {
             try {
                 Map<UUID, List<String>> map = plugin.loadNGWordsFile();
+                NGWord.ngwords.clear();
                 for (UUID uuid : map.keySet()) {
                     plugin.setNG(uuid, map.get(uuid).get(0));
+                    NGWord.ngwords.put(map.get(uuid).get(0), map.get(uuid));
                 }
-
+                NGWord.configuredNGWord = map;
+                Bukkit.getLogger().info(map.toString());
+                Map<String, List<String>> addMap = new HashMap<>();
                 List<List<String>> lists = plugin.loadAddWordsFile();
                 for (List<String> list : lists) {
-                    NGWord.additionalNGWords.put(list.get(0), list);
+                    addMap.put(list.get(0), list);
                 }
+                NGWord.additionalNGWords = addMap;
             } catch (Exception e) {
                 sender.sendMessage(Message.FailureMsg("リロードに失敗しました."));
             }
