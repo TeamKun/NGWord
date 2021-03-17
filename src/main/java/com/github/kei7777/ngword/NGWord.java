@@ -33,28 +33,7 @@ public class NGWord extends JavaPlugin {
         FileConfiguration config = getConfig();
         NGWordColor = ChatColor.valueOf(config.getString("NGWordColor"));
         converter = new HiraganaConverter();
-
-   /*     try {
-            Map<UUID, List<String>> map = loadNGWordsFile();
-            configuredNGWord = map;
-            for (UUID uuid : map.keySet()) {
-                ngwords.put(map.get(uuid).get(0), map.get(uuid));
-                setNG(uuid, map.get(uuid).get(0));
-            }
-        } catch (IOException | NullPointerException e) {
-            getLogger().log(Level.WARNING, ngwordsFilename + "読込中にエラーが発生しました.");
-            e.printStackTrace();
-        }
-
-        try {
-            List<List<String>> lists = loadAddWordsFile();
-            for (List<String> list : lists) {
-                additionalNGWords.put(list.get(0), list);
-            }
-        } catch (IOException | NullPointerException e) {
-            getLogger().log(Level.WARNING, addWordsFilename + "読込中にエラーが発生しました.");
-            e.printStackTrace();
-        }*/
+        
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
         getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
     }

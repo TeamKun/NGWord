@@ -54,25 +54,6 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                     .buildConversation(((Conversable) sender)).begin();
             return true;
         });
-      /*  subCmds.put("color", (sender, command, args) -> {
-            if (args.length < 2) {
-                sender.sendMessage(Message.FailureMsg("/ngword color <name>"));
-                return true;
-            }
-            try {
-                plugin.NGWordColor = ChatColor.valueOf(args[1]);
-            } catch (Exception e) {
-                sender.sendMessage(Message.FailureMsg(args[1] + "は存在しない色です."));
-                return true;
-            }
-            plugin.getConfig().set("NGWordColor", plugin.NGWordColor.name());
-            plugin.saveConfig();
-            NGWord.configuredNGWord.forEach((k, v) -> {
-                plugin.setNG(k, v.get(0));
-            });
-            sender.sendMessage("NGワードの色を「" + plugin.NGWordColor + args[1] + ChatColor.RESET + "」" + ChatColor.GREEN + "へ変更しました.");
-            return true;
-        });*/
         subCmds.put("list", (sender, command, args) -> {
             sender.sendMessage(Message.SuccessMsg("追加登録単語一覧"));
             for (String key : NGWord.additionalNGWords.keySet()) {

@@ -18,7 +18,7 @@ commands:
       /ngword list - 追加登録されたNGワードの一覧を表示する
       /ngword pardon <player> - プレイヤーのBANを解除する
       /ngword random - 全てのプレイヤーのNGワードをランダムに設定する
-      /ngword reload - ngwords.ymlとadditionalWords.ymlを再読み込みする
+      /ngword load - NGワードゲームを開始する
       /ngword reset - 全てのプレイヤーのNGワード及びBANの解除する
       /ngword remove <word> - 追加登録されているNGワードを削除する
       /ngword set <player> <word> - NGワードを設定する
