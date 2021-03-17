@@ -20,9 +20,6 @@ import java.util.List;
 public class AdditionalWordPrompt extends StringPrompt {
     HiraganaConverter converter;
     File dataFolder;
-    String firstMessage = ChatColor.LIGHT_PURPLE + "NGワードを入力してください.\n複数入力する必要がある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.";
-    String secondMessage = ChatColor.LIGHT_PURPLE + "NGワードに対応する読み方を平仮名で入力してください\n複数入力する必要がある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.";
-    int count = 0;
     List<String> ngwords;
     List<String> prons;
 
@@ -33,11 +30,7 @@ public class AdditionalWordPrompt extends StringPrompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
-        if (count == 0) {
-            return firstMessage;
-        } else {
-            return secondMessage;
-        }
+        return ChatColor.LIGHT_PURPLE + "NGワードと対応する読み方を半角スペース区切りで入力してください.\nそれぞれ複数入力する必要がある場合はカンマ(,)で区切ってください.\n中断する場合は「--quit」と入力してください.\n記述例: 50人クラフト 50にんくらふと,ごじゅうにんくらふと";
     }
 
     @Override
@@ -55,33 +48,31 @@ public class AdditionalWordPrompt extends StringPrompt {
                 }
             };
         }
-        List<String> s = Arrays.asList(input.split(",").clone());
-        if (count == 0) {
-            ngwords = s;
-            count++;
-            return this;
-        } else {
-            prons = s;
-            List<String> list = new ArrayList<>();
-            list.addAll(ngwords);
-            list.addAll(prons);
-            for (String pron : prons) {
-                list.addAll(converter.toRomaji(pron));
-            }
-            saveAddWordsFile(ngwords, prons);
-            NGWord.additionalNGWords.put(list.get(0), list);
-            return new MessagePrompt() {
-                @Override
-                protected Prompt getNextPrompt(ConversationContext context) {
-                    return Prompt.END_OF_CONVERSATION;
-                }
+        String[] inputs = input.split(" ");
+        List<String> ng = Arrays.asList(inputs[0].split(",").clone());
+        ngwords = ng;
+        List<String> pr = Arrays.asList(inputs[1].split(",").clone());
+        prons = pr;
+        saveAddWordsFile(ngwords, prons);
 
-                @Override
-                public String getPromptText(ConversationContext context) {
-                    return Message.SuccessMsg("NGワードを追加登録しました.");
-                }
-            };
+        List<String> list = new ArrayList<>();
+        list.addAll(ngwords);
+        list.addAll(prons);
+        for (String pron : prons) {
+            list.addAll(converter.toRomaji(pron));
         }
+        NGWord.additionalNGWords.put(list.get(0), list);
+        return new MessagePrompt() {
+            @Override
+            protected Prompt getNextPrompt(ConversationContext context) {
+                return Prompt.END_OF_CONVERSATION;
+            }
+
+            @Override
+            public String getPromptText(ConversationContext context) {
+                return Message.SuccessMsg("NGワードを追加登録しました.");
+            }
+        };
     }
 
     private void saveAddWordsFile(List<String> ngwords, List<String> prons) {

@@ -7,18 +7,23 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.NullConversationPrefix;
 import org.bukkit.entity.Player;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
     NGWord plugin;
-    List<String> subCmdList = Arrays.asList("add", "color", "list", "pardon", "random", "reload", "reset", "set");
+    List<String> subCmdList = Arrays.asList("add", "list", "pardon", "random", "reload", "reset", "remove", "set");
     Map<String, SubCommand> subCmds = new HashMap<>();
     ConversationFactory factory;
 
@@ -45,7 +50,7 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                     .buildConversation(((Conversable) sender)).begin();
             return true;
         });
-        subCmds.put("color", (sender, command, args) -> {
+      /*  subCmds.put("color", (sender, command, args) -> {
             if (args.length < 2) {
                 sender.sendMessage(Message.FailureMsg("/ngword color <name>"));
                 return true;
@@ -63,7 +68,7 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
             });
             sender.sendMessage("NGワードの色を「" + plugin.NGWordColor + args[1] + ChatColor.RESET + "」" + ChatColor.GREEN + "へ変更しました.");
             return true;
-        });
+        });*/
         subCmds.put("list", (sender, command, args) -> {
             sender.sendMessage(Message.SuccessMsg("追加登録単語一覧"));
             for (String key : NGWord.additionalNGWords.keySet()) {
@@ -134,6 +139,40 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
             sender.sendMessage(Message.SuccessMsg("全てのプレイヤーのBANを解除しました."));
             return true;
         });
+        subCmds.put("remove", ((sender, command, args) -> {
+            if (args.length < 2) {
+                sender.sendMessage(Message.FailureMsg("/ngword remove <word>"));
+                return true;
+            }
+
+            String word = args[1];
+            if (!NGWord.additionalNGWords.containsKey(word)) {
+                sender.sendMessage(Message.FailureMsg(word + "は登録されていません."));
+                return true;
+            }
+            try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(plugin.getDataFolder(), NGWord.addWordsFilename)), "UTF-8")) {
+                FileConfiguration addwordsyml = YamlConfiguration.loadConfiguration(in);
+                List<HashMap<String, List<String>>> aw = ((List<HashMap<String, List<String>>>) addwordsyml.getList("Words"));
+                HashMap<String, List<String>> rm = null;
+                for (HashMap<String, List<String>> map : aw) {
+                    for (String ng : map.get("NGWord")) {
+                        if (ng.equals(word)) {
+                            rm = map;
+                        }
+                    }
+                }
+                aw.remove(rm);
+                addwordsyml.set("Words", aw);
+                addwordsyml.save(new File(plugin.getDataFolder(), NGWord.addWordsFilename));
+
+            } catch (Exception e) {
+                sender.sendMessage(Message.FailureMsg("削除中にエラーが発生しました."));
+                return true;
+            }
+            NGWord.additionalNGWords.remove(word);
+            sender.sendMessage(Message.SuccessMsg("「" + word + "」が削除されました."));
+            return true;
+        }));
         subCmds.put("set", (sender, command, args) -> {
             if (args.length < 3) {
                 sender.sendMessage(Message.FailureMsg("/ngword set <player> <word>"));
@@ -147,6 +186,7 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
             }
             if (!NGWord.additionalNGWords.containsKey(args[2])) {
                 sender.sendMessage(Message.FailureMsg(args[2] + "は登録されていません."));
+                return true;
             }
             List<String> words = NGWord.additionalNGWords.get(args[2]);
             NGWord.configuredNGWord.put(p.getUniqueId(), words);
@@ -173,6 +213,10 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                             .collect(Collectors.toList());
                 case "reset":
                     return Collections.emptyList();
+                case "remove":
+                    return NGWord.additionalNGWords.keySet().stream()
+                            .filter(e -> e.startsWith(args[1]))
+                            .collect(Collectors.toList());
                 case "pardon":
                     return Stream.concat(NGWord.bannedPlayers.stream()
                             .map(Player::getName), Stream.of("@a"))
@@ -192,4 +236,5 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                     .collect(Collectors.toList());
         return Collections.emptyList();
     }
+
 }

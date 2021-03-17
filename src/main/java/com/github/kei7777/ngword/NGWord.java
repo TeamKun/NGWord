@@ -116,6 +116,24 @@ public class NGWord extends JavaPlugin {
         return lists;
     }
 
+    public void removeAddWord(String word) throws IOException {
+        try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(getDataFolder(), NGWord.addWordsFilename)), "UTF-8")) {
+            FileConfiguration addwordsyml = YamlConfiguration.loadConfiguration(in);
+            List<HashMap<String, List<String>>> aw = ((List<HashMap<String, List<String>>>) addwordsyml.getList("Words"));
+
+            for (HashMap<String, List<String>> map : aw) {
+                for (String ng : map.get("NGWord")) {
+                    if (ng.equals(word)) {
+                        aw.remove(map);
+                    }
+                }
+            }
+            addwordsyml.set("Words", aw);
+            addwordsyml.save(new File(getDataFolder(), NGWord.addWordsFilename));
+            NGWord.additionalNGWords.remove(word);
+        }
+    }
+
     public void setNG(Player p, String word) {
         NametagEdit.getApi().setSuffix(p, " " + NGWordColor + word);
     }
