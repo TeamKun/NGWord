@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
     NGWord plugin;
-    List<String> subCmdList = Arrays.asList("add", "list", "pardon", "random", "reload", "reset", "remove", "set");
+    List<String> subCmdList = Arrays.asList("add", "list", "pardon", "random", "load", "reset", "remove", "set");
     Map<String, SubCommand> subCmds = new HashMap<>();
     ConversationFactory factory;
 
@@ -41,6 +41,10 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) return false;
         String subCmd = args[0].toLowerCase();
+        if (!subCmds.containsKey(subCmd)) {
+            sender.sendMessage(Message.FailureMsg("/ngword " + subCmd + "は存在しません."));
+            return true;
+        }
         return subCmds.get(subCmd).execute(sender, command, args);
     }
 
@@ -110,7 +114,7 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
             sender.sendMessage(Message.SuccessMsg("全てのプレイヤーにNGワードをランダムで設定しました."));
             return true;
         });
-        subCmds.put("reload", (sender, command, args) -> {
+        subCmds.put("load", (sender, command, args) -> {
             try {
                 Map<UUID, List<String>> map = plugin.loadNGWordsFile();
                 NGWord.ngwords.clear();
@@ -126,9 +130,9 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 }
                 NGWord.additionalNGWords = addMap;
             } catch (Exception e) {
-                sender.sendMessage(Message.FailureMsg("リロードに失敗しました."));
+                sender.sendMessage(Message.FailureMsg("ロードに失敗しました."));
             }
-            sender.sendMessage(Message.SuccessMsg("リロードが完了しました."));
+            sender.sendMessage(Message.SuccessMsg("ロードが完了しました."));
             return true;
         });
         subCmds.put("reset", (sender, command, args) -> {
@@ -206,11 +210,6 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
         String subCmd = args[0].toLowerCase();
         if (args.length == 2) {
             switch (subCmd) {
-                case "color":
-                    return Arrays.stream(ChatColor.values())
-                            .map(ChatColor::name)
-                            .filter(x -> x.startsWith(args[1]))
-                            .collect(Collectors.toList());
                 case "reset":
                     return Collections.emptyList();
                 case "remove":

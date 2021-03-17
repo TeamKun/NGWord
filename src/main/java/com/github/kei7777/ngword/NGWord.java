@@ -13,7 +13,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.logging.Level;
 
 public class NGWord extends JavaPlugin {
     String ngwordsFilename = "ngwords.yml";
@@ -35,7 +34,7 @@ public class NGWord extends JavaPlugin {
         NGWordColor = ChatColor.valueOf(config.getString("NGWordColor"));
         converter = new HiraganaConverter();
 
-        try {
+   /*     try {
             Map<UUID, List<String>> map = loadNGWordsFile();
             configuredNGWord = map;
             for (UUID uuid : map.keySet()) {
@@ -55,7 +54,7 @@ public class NGWord extends JavaPlugin {
         } catch (IOException | NullPointerException e) {
             getLogger().log(Level.WARNING, addWordsFilename + "読込中にエラーが発生しました.");
             e.printStackTrace();
-        }
+        }*/
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
         getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
     }
@@ -116,25 +115,8 @@ public class NGWord extends JavaPlugin {
         return lists;
     }
 
-    public void removeAddWord(String word) throws IOException {
-        try (InputStreamReader in = new InputStreamReader(new FileInputStream(new File(getDataFolder(), NGWord.addWordsFilename)), "UTF-8")) {
-            FileConfiguration addwordsyml = YamlConfiguration.loadConfiguration(in);
-            List<HashMap<String, List<String>>> aw = ((List<HashMap<String, List<String>>>) addwordsyml.getList("Words"));
-
-            for (HashMap<String, List<String>> map : aw) {
-                for (String ng : map.get("NGWord")) {
-                    if (ng.equals(word)) {
-                        aw.remove(map);
-                    }
-                }
-            }
-            addwordsyml.set("Words", aw);
-            addwordsyml.save(new File(getDataFolder(), NGWord.addWordsFilename));
-            NGWord.additionalNGWords.remove(word);
-        }
-    }
-
     public void setNG(Player p, String word) {
+        p.sendMessage(Message.SuccessMsg("あなたにNGワードが設定されました."));
         NametagEdit.getApi().setSuffix(p, " " + NGWordColor + word);
     }
 
