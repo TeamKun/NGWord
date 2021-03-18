@@ -33,7 +33,16 @@ public class NGWord extends JavaPlugin {
         FileConfiguration config = getConfig();
         NGWordColor = ChatColor.valueOf(config.getString("NGWordColor"));
         converter = new HiraganaConverter();
-        
+        try {
+            Map<String, List<String>> addMap = new HashMap<>();
+            List<List<String>> lists = loadAddWordsFile();
+            for (List<String> list : lists) {
+                addMap.put(list.get(0), list);
+            }
+            NGWord.additionalNGWords = addMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         getServer().getPluginManager().registerEvents(new NGWordListener(this), this);
         getServer().getPluginCommand("ngword").setExecutor(new NGWordCommandExecutor(this));
     }

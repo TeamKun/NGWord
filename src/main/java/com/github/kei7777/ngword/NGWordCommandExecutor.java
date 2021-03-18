@@ -90,7 +90,6 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 Collections.shuffle(ngwords);
                 NGWord.configuredNGWord.put(p.getUniqueId(), ngwords.get(0));
                 plugin.setNG(p, ngwords.get(0).get(0));
-                ngwords.remove(ngwords.get(0));
             }
             sender.sendMessage(Message.SuccessMsg("全てのプレイヤーにNGワードをランダムで設定しました."));
             return true;
