@@ -10,7 +10,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.text.Normalizer;
 import java.util.stream.Collectors;
 
 public class NGWordListener implements Listener {
@@ -38,10 +37,9 @@ public class NGWordListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
-            //チャット文字列から色コードを削除 Normalizerで半角全角正規化 スペースの削除 大文字を小文字に変換 片仮名を平仮名に変換
-            String raw = plugin.converter.toHiragana(Normalizer.normalize(e.getMessage().replaceAll("§.", ""), Normalizer.Form.NFKC).replaceAll(" ", "").toLowerCase());
+            String chat = plugin.normalization(e.getMessage());
             for (String ng : NGWord.configuredNGWord.get(e.getPlayer().getUniqueId())) {
-                if (raw.contains(ng)) {
+                if (chat.contains(ng)) {
                     new BukkitRunnable() {
                         @Override
                         public void run() {

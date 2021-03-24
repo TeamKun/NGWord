@@ -12,7 +12,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.Normalizer;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NGWord extends JavaPlugin {
     String ngwordsFilename = "ngwords.yml";
@@ -56,20 +58,19 @@ public class NGWord extends JavaPlugin {
             for (HashMap<String, ?> map : w) {
                 try {
                     UUID uuid = UUID.fromString(map.get("UUID").toString());
-                    List<String> ngwords = ((List<String>) map.get("NGWord"));
-                    List<String> prons = ((List<String>) map.get("Pron"));
+                    List<String> ngwords = ((List<String>) map.get("NGWord")).stream().filter(Objects::nonNull).collect(Collectors.toList());
+                    List<String> prons = ((List<String>) map.get("Pron")).stream().filter(Objects::nonNull).collect(Collectors.toList());
                     for (String ng : ngwords) {
-                        ng = ng.toLowerCase();
+                        ng = normalization(ng.toLowerCase());
                         corr.put(uuid, new ArrayList<>());
                         corr.get(uuid).add(ng);
                         corr.get(uuid).add(converter.toHiragana(ng));
                     }
                     for (String pron : prons) {
-                        pron = pron.toLowerCase();
+                        pron = normalization(pron.toLowerCase());
                         corr.get(uuid).add(pron);
                         corr.get(uuid).addAll(converter.toRomaji(pron));
                     }
-
                 } catch (NullPointerException e) {
                     //空のフィールドがあった場合は飛ばす
                 }
@@ -101,6 +102,14 @@ public class NGWord extends JavaPlugin {
             }
         }
         return lists;
+    }
+
+    public String normalization(String raw) {
+        //文字列から色コードと改行を削除 Normalizerで半角全角正規化 スペースの削除 大文字を小文字に変換 片仮名を平仮名に変換
+        String n = converter.toHiragana(Normalizer.normalize(raw.replaceAll("§.|\n", ""), Normalizer.Form.NFKC).replaceAll(" ", "").toLowerCase());
+        //長音記号類を半角ハイフンに置き換え
+        n = n.replaceAll("ー|~|―|～|ー", "-");
+        return n;
     }
 
     public void setNG(Player p, String word) {
