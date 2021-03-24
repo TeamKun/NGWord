@@ -4,7 +4,7 @@ main: com.github.kei7777.ngword.NGWord
 api-version: 1.15
 prefix: NGWord
 authors: [ Kei, Kamesuta, Maru-256 ]
-softdepend: [ NametagEdit ]
+depend: [ NametagEdit ]
 description: NGWord
 website: https://github.com/Kei-7777
 
