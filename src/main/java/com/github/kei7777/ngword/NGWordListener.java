@@ -37,7 +37,7 @@ public class NGWordListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         if (NGWord.configuredNGWord.containsKey(e.getPlayer().getUniqueId())) {
-            String chat = plugin.normalization(e.getMessage());
+            String chat = plugin.normalize(e.getMessage());
             for (String ng : NGWord.configuredNGWord.get(e.getPlayer().getUniqueId())) {
                 if (chat.contains(ng)) {
                     new BukkitRunnable() {
@@ -49,6 +49,7 @@ public class NGWordListener implements Listener {
                         }
                     }.runTask(this.plugin);
                     Bukkit.broadcastMessage(ChatColor.RED + e.getPlayer().getName() + "がNGワードを発言しました！！ (" + plugin.configuredNGWord.get(e.getPlayer().getUniqueId()).get(0) + ")");
+                    return;
                 }
             }
 

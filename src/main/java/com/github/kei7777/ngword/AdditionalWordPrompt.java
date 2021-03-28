@@ -7,7 +7,6 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.MessagePrompt;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.StringPrompt;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,10 +21,12 @@ public class AdditionalWordPrompt extends StringPrompt {
     File dataFolder;
     List<String> ngwords;
     List<String> prons;
+    NGWord plugin;
 
-    AdditionalWordPrompt(JavaPlugin plugin) {
+    AdditionalWordPrompt(NGWord plugin) {
         this.converter = new HiraganaConverter();
-        dataFolder = plugin.getDataFolder();
+        this.dataFolder = plugin.getDataFolder();
+        this.plugin = plugin;
     }
 
     @Override
@@ -49,17 +50,19 @@ public class AdditionalWordPrompt extends StringPrompt {
             };
         }
         String[] inputs = input.split(" ");
-        List<String> ng = Arrays.asList(inputs[0].split(",").clone());
-        ngwords = ng;
-        List<String> pr = Arrays.asList(inputs[1].split(",").clone());
-        prons = pr;
+        ngwords = Arrays.asList(inputs[0].split(",").clone());
+        prons = Arrays.asList(inputs[1].split(",").clone());
         saveAddWordsFile(ngwords, prons);
 
         List<String> list = new ArrayList<>();
         list.addAll(ngwords);
+        for (String ng : ngwords) {
+            list.add(plugin.normalize(ng));
+        }
+
         list.addAll(prons);
         for (String pron : prons) {
-            list.addAll(converter.toRomaji(pron));
+            list.addAll(converter.toRomaji(plugin.normalize(pron)));
         }
         NGWord.additionalNGWords.put(list.get(0), list);
         return new MessagePrompt() {

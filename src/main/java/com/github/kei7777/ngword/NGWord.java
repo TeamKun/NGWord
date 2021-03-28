@@ -60,19 +60,20 @@ public class NGWord extends JavaPlugin {
                     UUID uuid = UUID.fromString(map.get("UUID").toString());
                     List<String> ngwords = ((List<String>) map.get("NGWord")).stream().filter(Objects::nonNull).collect(Collectors.toList());
                     List<String> prons = ((List<String>) map.get("Pron")).stream().filter(Objects::nonNull).collect(Collectors.toList());
+
+                    List<String> nglist = new ArrayList<>();
                     for (String ng : ngwords) {
-                        if (ng == null) continue;
-                        ng = normalization(ng.toLowerCase());
-                        corr.put(uuid, new ArrayList<>());
-                        corr.get(uuid).add(ng);
-                        corr.get(uuid).add(converter.toHiragana(ng));
+                        nglist.add(ng);
+                        ng = normalize(ng.toLowerCase());
+                        nglist.add(ng);
+                        nglist.add(converter.toHiragana(ng));
                     }
                     for (String pron : prons) {
-                        if (pron == null) continue;
-                        pron = normalization(pron.toLowerCase());
-                        corr.get(uuid).add(pron);
-                        corr.get(uuid).addAll(converter.toRomaji(pron));
+                        pron = normalize(pron.toLowerCase());
+                        nglist.add(pron);
+                        nglist.addAll(converter.toRomaji(pron));
                     }
+                    corr.put(uuid, nglist);
                 } catch (NullPointerException ignore) {
                     //UUIDが空の場合スキップする
                 }
@@ -92,8 +93,10 @@ public class NGWord extends JavaPlugin {
                     List<String> list = new ArrayList<>();
                     for (String ng : map.get("NGWord")) {
                         list.add(ng);
+                        list.add(normalize(ng));
                     }
                     for (String pron : map.get("Pron")) {
+                        pron = normalize(pron);
                         list.add(pron);
                         list.addAll(converter.toRomaji(pron));
                     }
@@ -106,7 +109,7 @@ public class NGWord extends JavaPlugin {
         return lists;
     }
 
-    public String normalization(String raw) {
+    public String normalize(String raw) {
         //文字列から色コードと改行を削除 Normalizerで半角全角正規化 スペースの削除 大文字を小文字に変換 片仮名を平仮名に変換
         String n = converter.toHiragana(Normalizer.normalize(raw.replaceAll("§.|\n", ""), Normalizer.Form.NFKC).replaceAll(" ", "").toLowerCase());
         //長音記号類を半角ハイフンに置き換え
