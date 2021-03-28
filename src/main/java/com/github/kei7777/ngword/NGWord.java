@@ -61,18 +61,20 @@ public class NGWord extends JavaPlugin {
                     List<String> ngwords = ((List<String>) map.get("NGWord")).stream().filter(Objects::nonNull).collect(Collectors.toList());
                     List<String> prons = ((List<String>) map.get("Pron")).stream().filter(Objects::nonNull).collect(Collectors.toList());
                     for (String ng : ngwords) {
+                        if (ng == null) continue;
                         ng = normalization(ng.toLowerCase());
                         corr.put(uuid, new ArrayList<>());
                         corr.get(uuid).add(ng);
                         corr.get(uuid).add(converter.toHiragana(ng));
                     }
                     for (String pron : prons) {
+                        if (pron == null) continue;
                         pron = normalization(pron.toLowerCase());
                         corr.get(uuid).add(pron);
                         corr.get(uuid).addAll(converter.toRomaji(pron));
                     }
-                } catch (NullPointerException e) {
-                    //空のフィールドがあった場合は飛ばす
+                } catch (NullPointerException ignore) {
+                    //UUIDが空の場合スキップする
                 }
             }
         }
@@ -96,7 +98,7 @@ public class NGWord extends JavaPlugin {
                         list.addAll(converter.toRomaji(pron));
                     }
                     lists.add(list);
-                } catch (NullPointerException e) {
+                } catch (NullPointerException ignore) {
                     //空のフィールドがあった場合は飛ばす
                 }
             }
