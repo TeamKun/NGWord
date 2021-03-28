@@ -113,8 +113,6 @@ public class NGWordCommandExecutor implements CommandExecutor, TabCompleter {
                 sender.sendMessage(Message.FailureMsg("ロードに失敗しました."));
                 return true;
             }
-            Bukkit.getLogger().info(NGWord.configuredNGWord.toString());
-            Bukkit.getLogger().info(NGWord.ngwords.get("やほ-").toString());
             sender.sendMessage(Message.SuccessMsg("ロードが完了しました."));
             return true;
         });
